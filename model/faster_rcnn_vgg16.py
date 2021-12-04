@@ -9,6 +9,40 @@ from model.faster_rcnn import FasterRCNN
 from utils import array_tool as at
 from utils.config import opt
 
+import timm
+
+class NewExtractor(nn.Module):
+    
+
+    def __init__(self):
+        # n_class includes the background
+        super(NewExtractor, self).__init__()
+
+        self.extractor = timm.create_model('efficientnetv2_rw_m', pretrained=False)
+        self.reduceCNN = nn.Conv2d(328, 512, (1, 1))
+
+        for p in self.extractor.conv_stem.parameters():
+            p.requires_grad = False
+        
+        for p in self.extractor.bn1.parameters():
+            p.requires_grad = False
+        
+        for p in self.extractor.act1.parameters():
+            p.requires_grad = False
+
+        for p in self.extractor.blocks.parameters():
+            p.requires_grad = False
+        
+
+    def forward(self, x):
+        
+        #x = self.extractor.forward_features(x)
+        x = self.extractor.conv_stem(x)
+        x = self.extractor.bn1(x)
+        x = self.extractor.act1(x)
+        x = self.extractor.blocks(x)
+        #x = self.reduceCNN(x)
+        return x
 
 def decom_vgg16():
     # the 30th layer of features is relu of conv5_3
@@ -62,9 +96,10 @@ class FasterRCNNVGG16(FasterRCNN):
                  ):
                  
         extractor, classifier = decom_vgg16()
+        extractor = NewExtractor()
 
         rpn = RegionProposalNetwork(
-            512, 512,
+            328, 512,
             ratios=ratios,
             anchor_scales=anchor_scales,
             feat_stride=self.feat_stride,
@@ -103,6 +138,7 @@ class VGG16RoIHead(nn.Module):
         # n_class includes the background
         super(VGG16RoIHead, self).__init__()
 
+        self.temp_classifier = nn.Linear(16072,25088)
         self.classifier = classifier
         self.cls_loc = nn.Linear(4096, n_class * 4)
         self.score = nn.Linear(4096, n_class)
@@ -142,7 +178,14 @@ class VGG16RoIHead(nn.Module):
 
         pool = self.roi(x, indices_and_rois)
         pool = pool.view(pool.size(0), -1)
-        fc7 = self.classifier(pool)
+
+
+        print(pool.shape)
+
+        fc6 = self.temp_classifier(pool)
+        fc7 = self.classifier(fc6)
+        
+        #fc7 = self.classifier(pool)
         roi_cls_locs = self.cls_loc(fc7)
         roi_scores = self.score(fc7)
         return roi_cls_locs, roi_scores
