@@ -101,9 +101,9 @@ def train(**kwargs):
                 trainer.vis.img('pred_img', pred_img)
 
                 # rpn confusion matrix(meter)
-                #trainer.vis.text(str(trainer.rpn_cm.value().tolist()), win='rpn_cm')
+                trainer.vis.text(str(trainer.rpn_cm.value().tolist()), win='rpn_cm')
                 # roi confusion matrix
-                #trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
+                trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
         eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num)
         trainer.vis.plot('test_map', eval_result['map'])
         lr_ = trainer.faster_rcnn.optimizer.param_groups[0]['lr']
