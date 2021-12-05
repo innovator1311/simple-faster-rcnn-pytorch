@@ -21,7 +21,7 @@ class NewExtractor(nn.Module):
         self.extractor = timm.create_model('efficientnetv2_rw_m', pretrained=False)
         self.reduceCNN = nn.Conv2d(328, 512, (1, 1))
 
-        for p in self.extractor.conv_stem.parameters():
+        '''for p in self.extractor.conv_stem.parameters():
             p.requires_grad = False
         
         for p in self.extractor.bn1.parameters():
@@ -31,16 +31,19 @@ class NewExtractor(nn.Module):
             p.requires_grad = False
 
         for p in self.extractor.blocks.parameters():
+            p.requires_grad = False'''
+
+        for p in self.extractor.parameters():
             p.requires_grad = False
         
 
     def forward(self, x):
         
-        #x = self.extractor.forward_features(x)
-        x = self.extractor.conv_stem(x)
-        x = self.extractor.bn1(x)
-        x = self.extractor.act1(x)
-        x = self.extractor.blocks(x)
+        x = self.extractor.forward_features(x)
+        #x = self.extractor.conv_stem(x)
+        #x = self.extractor.bn1(x)
+        #x = self.extractor.act1(x)
+        #x = self.extractor.blocks(x)
         #x = self.reduceCNN(x)
         return x
 
