@@ -55,6 +55,7 @@ class RegionProposalNetwork(nn.Module):
         self.conv1 = nn.Conv2d(in_channels, mid_channels, 3, 1, 1)
         self.score = nn.Conv2d(mid_channels, n_anchor * 2, 1, 1, 0)
         self.loc = nn.Conv2d(mid_channels, n_anchor * 4, 1, 1, 0)
+        self.isGradCamMode = False
         normal_init(self.conv1, 0, 0.01)
         normal_init(self.score, 0, 0.01)
         normal_init(self.loc, 0, 0.01)
@@ -131,6 +132,10 @@ class RegionProposalNetwork(nn.Module):
 
         rois = np.concatenate(rois, axis=0)
         roi_indices = np.concatenate(roi_indices, axis=0)
+
+        if self.isGradCamMode:
+            return rpn_scores
+
         return rpn_locs, rpn_scores, rois, roi_indices, anchor
 
 
