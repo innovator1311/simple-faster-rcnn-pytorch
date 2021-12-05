@@ -134,6 +134,10 @@ class FasterRCNN(nn.Module):
             self.rpn(h, img_size, scale)
         roi_cls_locs, roi_scores = self.head(
             h, rois, roi_indices)
+
+        if self.isGradCamMode:
+            return roi_scores[self.boxIndex]
+
         return roi_cls_locs, roi_scores, rois, roi_indices
 
     def use_preset(self, preset):
@@ -269,7 +273,7 @@ class FasterRCNN(nn.Module):
         if self.isGradCamMode:
 
             return labels[self.boxIndex]
-            
+
         return bboxes, labels, scores
 
     def get_optimizer(self):
