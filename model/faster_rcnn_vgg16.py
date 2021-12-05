@@ -39,11 +39,11 @@ class NewExtractor(nn.Module):
 
     def forward(self, x):
         
-        x = self.extractor.forward_features(x)
-        #x = self.extractor.conv_stem(x)
-        #x = self.extractor.bn1(x)
-        #x = self.extractor.act1(x)
-        #x = self.extractor.blocks(x)
+        #x = self.extractor.forward_features(x)
+        x = self.extractor.conv_stem(x)
+        x = self.extractor.bn1(x)
+        x = self.extractor.act1(x)
+        x = self.extractor.blocks(x)
         #x = self.reduceCNN(x)
         return x
 
