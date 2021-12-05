@@ -136,7 +136,7 @@ class FasterRCNN(nn.Module):
             h, rois, roi_indices)
 
         if self.isGradCamMode:
-            return roi_scores[self.boxIndex]
+            return roi_scores
 
         return roi_cls_locs, roi_scores, rois, roi_indices
 
