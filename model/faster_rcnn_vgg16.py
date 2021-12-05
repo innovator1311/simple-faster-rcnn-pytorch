@@ -96,6 +96,14 @@ class FasterRCNNVGG16(FasterRCNN):
                  ):
                  
         extractor, classifier = decom_vgg16()
+        #print(classifier)
+        classifier = nn.Sequential(
+          nn.Linear(16072, 4096),
+          nn.ReLU(inplace=True),
+          nn.Linear(4096, 4096),
+          nn.ReLU(inplace=True)
+        )
+
         extractor = NewExtractor()
 
         rpn = RegionProposalNetwork(
@@ -138,7 +146,7 @@ class VGG16RoIHead(nn.Module):
         # n_class includes the background
         super(VGG16RoIHead, self).__init__()
 
-        self.temp_classifier = nn.Linear(16072,25088)
+        #self.temp_classifier = nn.Linear(16072,25088)
         self.classifier = classifier
         self.cls_loc = nn.Linear(4096, n_class * 4)
         self.score = nn.Linear(4096, n_class)
@@ -182,8 +190,8 @@ class VGG16RoIHead(nn.Module):
 
         print(pool.shape)
 
-        fc6 = self.temp_classifier(pool)
-        fc7 = self.classifier(fc6)
+        #fc6 = self.temp_classifier(pool)
+        fc7 = self.classifier(pool)
         
         #fc7 = self.classifier(pool)
         roi_cls_locs = self.cls_loc(fc7)
