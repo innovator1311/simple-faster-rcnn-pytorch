@@ -31,10 +31,10 @@ class NewExtractor(nn.Module):
             p.requires_grad = False
 
         for p in self.extractor.blocks.parameters():
-            p.requires_grad = False'''
+            p.requires_grad = False
 
         for p in self.extractor.parameters():
-            p.requires_grad = False
+            p.requires_grad = False'''
         
 
     def forward(self, x):
@@ -191,7 +191,7 @@ class VGG16RoIHead(nn.Module):
         pool = pool.view(pool.size(0), -1)
 
 
-        print(pool.shape)
+        #print(pool.shape)
 
         #fc6 = self.temp_classifier(pool)
         fc7 = self.classifier(pool)
