@@ -77,6 +77,9 @@ class FasterRCNN(nn.Module):
         self.rpn = rpn
         self.head = head
 
+        self.isGradCamMode = False
+        self.boxIndex = 0
+
         # mean and std
         self.loc_normalize_mean = loc_normalize_mean
         self.loc_normalize_std = loc_normalize_std
@@ -263,6 +266,10 @@ class FasterRCNN(nn.Module):
 
         self.use_preset('evaluate')
         self.train()
+        if (self.isGradCamMode) {
+            
+            return labels[self.boxIndex]
+        }
         return bboxes, labels, scores
 
     def get_optimizer(self):
