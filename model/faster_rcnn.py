@@ -266,10 +266,10 @@ class FasterRCNN(nn.Module):
 
         self.use_preset('evaluate')
         self.train()
-        if (self.isGradCamMode) {
-            
+        if self.isGradCamMode:
+
             return labels[self.boxIndex]
-        }
+            
         return bboxes, labels, scores
 
     def get_optimizer(self):
