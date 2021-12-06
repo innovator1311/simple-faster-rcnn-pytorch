@@ -7,12 +7,13 @@ from model.utils.bbox_tools import loc2bbox
 from torchvision.ops import nms
 # from model.utils.nms import non_maximum_suppression
 
+import torch
 from torch import nn
 from data.dataset import preprocess
 from torch.nn import functional as F
 from utils.config import opt
 
-from detection2.modeling.roi_heads.fast_rcnn import fast_rcnn_inference
+from detectron2.modeling.roi_heads.fast_rcnn import fast_rcnn_inference
 
 
 def nograd(f):
@@ -137,10 +138,7 @@ class FasterRCNN(nn.Module):
         roi_cls_locs, roi_scores = self.head(
             h, rois, roi_indices)
 
-        if self.isGradCamMode:
-            return roi_scores
-
-        return roi_cls_locs, roi_scores, rois, roi_indices
+        return roi_cls_locs, roi_scores, rois, roi_indices, rpn_locs, rpn_scores
 
     def use_preset(self, preset):
         """Use the given preset during prediction.
@@ -239,7 +237,7 @@ class FasterRCNN(nn.Module):
         for img, size in zip(prepared_imgs, sizes):
             img = at.totensor(img[None]).float()
             scale = img.shape[3] / size[1]
-            roi_cls_loc, roi_scores, rois, _ = self(img, scale=scale)
+            roi_cls_loc, roi_scores, rois, _, rpn_locs, rpn_scores = self(img, scale=scale)
             # We are assuming that batch size is 1.
             roi_score = roi_scores.data
             roi_cls_loc = roi_cls_loc.data
@@ -272,11 +270,8 @@ class FasterRCNN(nn.Module):
 
         self.use_preset('evaluate')
         self.train()
-        if self.isGradCamMode:
 
-            return labels[self.boxIndex]
-
-        return bboxes, labels, scores
+        return bboxes, labels, scores, rpn_locs, rpn_scores
 
     def get_optimizer(self):
         """
@@ -304,13 +299,30 @@ class FasterRCNN(nn.Module):
 
     def inference(self, inputs):
 
+        inputs = inputs[0]
         image = [inputs["image"]]
+        image_shape = [(inputs["width"], inputs["height"])]
 
-        bboxes, labels, scores = self.predict(image)
+        print(image[0].shape)
+
+        test_score_thresh = 0.0
+        test_nms_thresh = 0.5
+        test_topk_per_image = 100
+
+        bboxes, labels, scores = self.predict(image, visualize=True)
+        bboxes = torch.Tensor(bboxes)
+        scores = torch.Tensor([scores])
+
+        print("INPUT ", bboxes.shape)
+        print("INPUT 1", scores.shape)
+
         result, _ = fast_rcnn_inference(
             bboxes,
-            labels,
-            scores
+            scores,
+            image_shape,
+            test_score_thresh,
+            test_nms_thresh,
+            test_topk_per_image
         )
         return [{"instances": result}]
 

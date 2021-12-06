@@ -112,6 +112,7 @@ class RegionProposalNetwork(nn.Module):
         # A: Yes
         rpn_locs = rpn_locs.permute(0, 2, 3, 1).contiguous().view(n, -1, 4)
         rpn_scores = self.score(h)
+
         rpn_scores = rpn_scores.permute(0, 2, 3, 1).contiguous()
         rpn_softmax_scores = F.softmax(rpn_scores.view(n, hh, ww, n_anchor, 2), dim=4)
         rpn_fg_scores = rpn_softmax_scores[:, :, :, :, 1].contiguous()
@@ -132,9 +133,6 @@ class RegionProposalNetwork(nn.Module):
 
         rois = np.concatenate(rois, axis=0)
         roi_indices = np.concatenate(roi_indices, axis=0)
-
-        if self.isGradCamMode:
-            return rpn_scores
 
         return rpn_locs, rpn_scores, rois, roi_indices, anchor
 
