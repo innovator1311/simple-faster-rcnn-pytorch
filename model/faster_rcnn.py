@@ -12,6 +12,8 @@ from data.dataset import preprocess
 from torch.nn import functional as F
 from utils.config import opt
 
+from detection2.modeling.roi_heads.fast_rcnn import fast_rcnn_inference
+
 
 def nograd(f):
     def new_f(*args,**kwargs):
@@ -300,6 +302,16 @@ class FasterRCNN(nn.Module):
             param_group['lr'] *= decay
         return self.optimizer
 
+    def inference(self, inputs):
 
+        image = [inputs["image"]]
+
+        bboxes, labels, scores = self.predict(image)
+        result, _ = fast_rcnn_inference(
+            bboxes,
+            labels,
+            scores
+        )
+        return [{"instances": result}]
 
 
