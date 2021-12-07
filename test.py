@@ -9,7 +9,7 @@ from utils import array_tool as at
 
 faster_rcnn = FasterRCNNVGG16(n_fg_class=1)
 trainer = FasterRCNNTrainer(faster_rcnn).cuda()
-trainer.load('/content/frcnn/checkpoints/fasterrcnn_12051033_0.7070707070707071')
+trainer.load('/content/fasterrcnn_12051807_1.0000000000000002')
 opt.caffe_pretrain=False # this model was trained from torchvision-pretrained model
 
 img = read_image('/content/trial/JPEGImages/VO_TAN_HUNG.MR.BENH_VIEN_C_DA_NANG_KHOP_GOI.0009.0014.2021.08.17.12.30.09.692036.293359582.jpg')

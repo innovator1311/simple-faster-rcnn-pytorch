@@ -13,9 +13,6 @@ from data.dataset import preprocess
 from torch.nn import functional as F
 from utils.config import opt
 
-from detectron2.modeling.roi_heads.fast_rcnn import fast_rcnn_inference
-
-
 def nograd(f):
     def new_f(*args,**kwargs):
         with t.no_grad():
