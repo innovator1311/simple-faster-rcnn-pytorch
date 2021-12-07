@@ -108,10 +108,12 @@ class RegionProposalNetwork(nn.Module):
         h = F.relu(self.conv1(x))
 
         rpn_locs = self.loc(h)
+        raw_rpn_locs = rpn_locs
         # UNNOTE: check whether need contiguous
         # A: Yes
         rpn_locs = rpn_locs.permute(0, 2, 3, 1).contiguous().view(n, -1, 4)
         rpn_scores = self.score(h)
+        raw_rpn_scores = rpn_scores
 
         rpn_scores = rpn_scores.permute(0, 2, 3, 1).contiguous()
         rpn_softmax_scores = F.softmax(rpn_scores.view(n, hh, ww, n_anchor, 2), dim=4)
@@ -134,7 +136,7 @@ class RegionProposalNetwork(nn.Module):
         rois = np.concatenate(rois, axis=0)
         roi_indices = np.concatenate(roi_indices, axis=0)
 
-        return rpn_locs, rpn_scores, rois, roi_indices, anchor
+        return rpn_locs, rpn_scores, rois, roi_indices, anchor, raw_rpn_locs, raw_rpn_scores
 
 
 def _enumerate_shifted_anchor(anchor_base, feat_stride, height, width):
