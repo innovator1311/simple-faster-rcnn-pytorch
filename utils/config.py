@@ -7,7 +7,7 @@ from pprint import pprint
 
 class Config:
     # data
-    voc_data_dir = '/content/trial/'
+    voc_data_dir = '/content/data/'
     min_size = 600  # image resize
     max_size = 1000 # image resize
     num_workers = 8
