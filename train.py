@@ -13,6 +13,25 @@ from trainer import FasterRCNNTrainer
 from utils import array_tool as at
 from utils.vis_tool import visdom_bbox
 from utils.eval_tool import eval_detection_voc
+from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
+
+def draw_result(lst_iter_train, lst_iter_val, lst_loss_train, lst_loss_val, title):
+    plt.plot(lst_iter_train, lst_loss_train, '-b', label='train loss')
+    plt.plot(lst_iter_val, lst_loss_val, '-r', label='val loss')
+
+    plt.xlabel("n iteration")
+    plt.legend(loc='upper left')
+    plt.title(title)
+
+    # save image
+    plt.savefig(title+".png")  # should before show method
+
+    # show
+    #plt.show()
+
+
+
 
 # fix for ulimit
 # https://github.com/pytorch/pytorch/issues/973#issuecomment-346405667
@@ -29,7 +48,7 @@ def eval(dataloader, faster_rcnn, test_num=10000):
     gt_bboxes, gt_labels, gt_difficults = list(), list(), list()
     for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
         sizes = [sizes[0][0].item(), sizes[1][0].item()]
-        pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
+        pred_bboxes_, pred_labels_, pred_scores_, _, _ = faster_rcnn.predict(imgs, [sizes])
         gt_bboxes += list(gt_bboxes_.numpy())
         gt_labels += list(gt_labels_.numpy())
         gt_difficults += list(gt_difficults_.numpy())
@@ -49,6 +68,7 @@ def train(**kwargs):
     opt._parse(kwargs)
 
     dataset = Dataset(opt)
+    writer = SummaryWriter()
     print('load data')
     dataloader = data_.DataLoader(dataset, \
                                   batch_size=1, \
@@ -71,12 +91,27 @@ def train(**kwargs):
     trainer.vis.text(dataset.db.label_names, win='labels')
     best_map = 0
     lr_ = opt.lr
+
+    lst_iter_train = []
+    lst_loss_train = []
+    lst_iter_val = []
+    lst_loss_val = []
+
+    iters = 0
+
     for epoch in range(opt.epoch):
         trainer.reset_meters()
+
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
+            
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
-            trainer.train_step(img, bbox, label, scale)
+            losses = trainer.train_step(img, bbox, label, scale)
+            #writer.add_scalar("Loss/train", losses.total_loss, ii)
+
+            lst_iter_train.append(iters)
+            lst_loss_train.append(losses.total_loss)
+            
 
             if (ii + 1) % opt.plot_every == 0:
                 if os.path.exists(opt.debug_file):
@@ -93,7 +128,7 @@ def train(**kwargs):
                 trainer.vis.img('gt_img', gt_img)
 
                 # plot predicti bboxes
-                _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
+                _bboxes, _labels, _scores, _, _ = trainer.faster_rcnn.predict([ori_img_], visualize=True)
                 pred_img = visdom_bbox(ori_img_,
                                        at.tonumpy(_bboxes[0]),
                                        at.tonumpy(_labels[0]).reshape(-1),
@@ -104,12 +139,20 @@ def train(**kwargs):
                 trainer.vis.text(str(trainer.rpn_cm.value().tolist()), win='rpn_cm')
                 # roi confusion matrix
                 trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
+        
+                iters += 1
+
         eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num)
         trainer.vis.plot('test_map', eval_result['map'])
         lr_ = trainer.faster_rcnn.optimizer.param_groups[0]['lr']
         log_info = 'lr:{}, map:{},loss:{}'.format(str(lr_),
                                                   str(eval_result['map']),
                                                   str(trainer.get_meter_data()))
+
+        lst_iter_val.append(iters)
+        lst_loss_val.append(trainer.get_meter_data()['total_loss'])
+
+        #print(log_info)
         trainer.vis.log(log_info)
 
         if eval_result['map'] > best_map:
@@ -122,6 +165,10 @@ def train(**kwargs):
 
         #if epoch == 13: 
         #    break
+
+        writer.flush()
+
+    draw_result(lst_iter_train, lst_iter_val, lst_loss_train, lst_loss_val, "sgd_method")
 
 
 if __name__ == '__main__':

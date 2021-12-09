@@ -175,7 +175,15 @@ class Visualizer(object):
     """
 
     def __init__(self, env='default', **kwargs):
-        self.vis = visdom.Visdom('localhost',env=env, use_incoming_socket=False, **kwargs)
+
+        
+        import time
+        time.sleep(5)
+
+        import visdom
+        time.sleep(5)
+
+        self.vis = visdom.Visdom(port='6006')
         self._vis_kw = kwargs
 
         # e.g.('loss',23) the 23th value of loss

@@ -19,7 +19,7 @@ class NewExtractor(nn.Module):
         super(NewExtractor, self).__init__()
 
         self.extractor = timm.create_model('efficientnetv2_rw_m', pretrained=False)
-        self.reduceCNN = nn.Conv2d(328, 512, (1, 1))
+        #self.reduceCNN = nn.Conv2d(328, 512, (1, 1))
 
         '''for p in self.extractor.conv_stem.parameters():
             p.requires_grad = False

@@ -323,4 +323,34 @@ class FasterRCNN(nn.Module):
         )
         return [{"instances": result}]
 
+    def final_predict(self, inputs):
 
+        isAclArr = []        
+
+        #Input is all images of one patient
+        for i in inputs:
+            
+            bboxes, labels, scores, _, _ = self.predict(i, visualize=True)
+            isAcl = self.checkAcl(bboxes, labels, scores)
+            isAclArr.append(isAcl)
+
+        finalResult = False
+        for i in isAcl:
+
+            if i and finalResult:
+                return True
+            
+            if not i:
+                finalResult = False
+            else:
+                finalResult = True
+
+        return False
+
+
+    def checkAcl(self, bboxes, labels, scores):
+
+        if len(bboxes) > 0:
+            return True
+        
+        return False
