@@ -19,7 +19,7 @@ class NewExtractor(nn.Module):
         super(NewExtractor, self).__init__()
 
         self.extractor = timm.create_model('efficientnetv2_rw_m', pretrained=False)
-        checkpoint = torch.load("/content/model_best.pth.tar")
+        checkpoint = t.load("/content/model_best.pth.tar")
         self.extractor.load_state_dict(checkpoint['state_dict'])
 
         #self.reduceCNN = nn.Conv2d(328, 512, (1, 1))
