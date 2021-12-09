@@ -133,7 +133,10 @@ class VOCBboxDataset:
 
     __getitem__ = get_example
 
-VOC_BBOX_LABEL_NAMES = ('acl')
+VOC_BBOX_LABEL_NAMES = (
+    'acl_injured',
+    'acl_normal'
+)
 
 '''VOC_BBOX_LABEL_NAMES = (
     'aeroplane',
