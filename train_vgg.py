@@ -75,7 +75,7 @@ def train(**kwargs):
     writer = SummaryWriter()
     print('load data')
     dataloader = data_.DataLoader(dataset, \
-                                  batch_size=1, \
+                                  batch_size=8, \
                                   shuffle=True, \
                                   # pin_memory=True,
                                   num_workers=opt.num_workers
@@ -87,7 +87,7 @@ def train(**kwargs):
                                        shuffle=False, \
                                        pin_memory=True
                                        )
-    faster_rcnn = FasterRCNNVGG16(n_fg_class=2)
+    faster_rcnn = FasterRCNNVGG16Real(n_fg_class=2)
     print('model construct completed')
     trainer = FasterRCNNTrainer(faster_rcnn).cuda()
     if opt.load_path:
@@ -165,7 +165,7 @@ def train(**kwargs):
 
         if eval_result['map'] > best_map:
             best_map = eval_result['map']
-            best_path = trainer.save(best_map=best_map,save_path="checkpoint_effV2")
+            best_path = trainer.save(best_map=best_map, save_path="checkpoint_vgg")
         if epoch == 9:
             trainer.load(best_path)
             trainer.faster_rcnn.scale_lr(opt.lr_decay)
