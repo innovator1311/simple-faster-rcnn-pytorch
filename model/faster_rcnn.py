@@ -199,7 +199,7 @@ class FasterRCNN(nn.Module):
         return bbox, label, score
 
     @nograd
-    def predict(self, imgs, features, sizes=None,visualize=False):
+    def predict(self, imgs, sizes=None,visualize=False):
         """Detect objects from images.
 
         This method predicts objects for each image.
@@ -243,14 +243,14 @@ class FasterRCNN(nn.Module):
         labels = list()
         scores = list()
         #features = [features]
-        for img, size, feature in zip(prepared_imgs, sizes, features):
+        for img, size, feature in zip(prepared_imgs, sizes):
             img = at.totensor(img[None]).float()
-            feature = at.totensor(feature[None]).float()
+            #feature = at.totensor(feature[None]).float()
             scale = img.shape[3] / size[1]
             
             #print(feature)
 
-            roi_cls_loc, roi_scores, rois, _, rpn_locs, rpn_scores = self.forward_features(feature, scale=scale)
+            roi_cls_loc, roi_scores, rois, _, rpn_locs, rpn_scores = self.forward(img, scale=scale)
             # We are assuming that batch size is 1.
             roi_score = roi_scores.data
             roi_cls_loc = roi_cls_loc.data
