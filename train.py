@@ -75,7 +75,7 @@ def train(**kwargs):
     writer = SummaryWriter()
     print('load data')
     dataloader = data_.DataLoader(dataset, \
-                                  batch_size=1, \
+                                  batch_size=8, \
                                   shuffle=True, \
                                   # pin_memory=True,
                                   num_workers=opt.num_workers
