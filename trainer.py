@@ -196,10 +196,12 @@ class FasterRCNNTrainer(nn.Module):
             save_dict['optimizer'] = self.optimizer.state_dict()
 
         if save_path is None:
-            timestr = time.strftime('%m%d%H%M')
-            save_path = 'checkpoints/fasterrcnn_%s' % timestr
-            for k_, v_ in kwargs.items():
-                save_path += '_%s' % v_
+          save_path = "checkpoints"
+        
+        timestr = time.strftime('%m%d%H%M')
+        save_path = save_path + '/fasterrcnn_%s' % timestr
+        for k_, v_ in kwargs.items():
+            save_path += '_%s' % v_
 
         save_dir = os.path.dirname(save_path)
         if not os.path.exists(save_dir):
