@@ -19,7 +19,7 @@ class NewVGGExtractor(nn.Module):
         super(NewVGGExtractor, self).__init__()
 
         extractor = timm.create_model('vgg16',pretrained=True)
-        features = self.extractor(extractor.features)[:-1]
+        features = list(extractor.features)[:-1]
         
       
         self.seg = nn.Sequential(*features)
