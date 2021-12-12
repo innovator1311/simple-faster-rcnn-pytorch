@@ -46,7 +46,7 @@ matplotlib.use('agg')
 def eval(dataloader, faster_rcnn, test_num=10000):
     pred_bboxes, pred_labels, pred_scores = list(), list(), list()
     gt_bboxes, gt_labels, gt_difficults = list(), list(), list()
-    for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_, gt_features_) in tqdm(enumerate(dataloader)):
+    for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
         
         gt_features_ = gt_features_.cuda()
         #print(gt_features_.shape)
