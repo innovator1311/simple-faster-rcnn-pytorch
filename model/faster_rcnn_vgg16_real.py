@@ -16,7 +16,7 @@ class NewVGGExtractor(nn.Module):
 
     def __init__(self):
         # n_class includes the background
-        super(NewExtractor, self).__init__()
+        super(NewVGGExtractor, self).__init__()
 
         extractor = timm.create_model('vgg16',pretrained=True)
         features = self.extractor(extractor.features)[:-1]
