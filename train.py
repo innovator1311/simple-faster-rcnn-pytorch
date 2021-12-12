@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from utils.config import opt
 from data.dataset import Dataset, TestDataset, inverse_normalize
-from model import FasterRCNNVGG16
+from model import FasterRCNNVGG16, FasterRCNNVGG16Real
 from torch.utils import data as data_
 from trainer import FasterRCNNTrainer
 from utils import array_tool as at
