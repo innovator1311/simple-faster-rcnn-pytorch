@@ -109,7 +109,7 @@ def train(**kwargs):
             
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
-            losses = trainer.train_step(img, bbox, label, scale, feature)
+            losses = trainer.train_step(img, bbox, label, scale)
             #writer.add_scalar("Loss/train", losses.total_loss, ii)
 
             lst_iter_train.append(iters)
