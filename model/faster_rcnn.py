@@ -243,7 +243,7 @@ class FasterRCNN(nn.Module):
         labels = list()
         scores = list()
         #features = [features]
-        for img, size, feature in zip(prepared_imgs, sizes):
+        for img, size in zip(prepared_imgs, sizes):
             img = at.totensor(img[None]).float()
             #feature = at.totensor(feature[None]).float()
             scale = img.shape[3] / size[1]
