@@ -62,7 +62,7 @@ class FasterRCNNTrainer(nn.Module):
         self.roi_cm = ConfusionMeter(21)
         self.meters = {k: AverageValueMeter() for k in LossTuple._fields}  # average loss
 
-    def forward(self, imgs, bboxes, labels, scale, feature):
+    def forward(self, imgs, bboxes, labels, scale):
         """Forward Faster R-CNN and calculate losses.
 
         Here are notations used.
@@ -92,16 +92,12 @@ class FasterRCNNTrainer(nn.Module):
         #    raise ValueError('Currently only batch size 1 is supported.')
 
         _, _, H, W = imgs.shape
-        #img_size = (H, W)
-        img_size = (224, 224)
+        img_size = (H, W)
 
-        #feature = self.faster_rcnn.extractor(imgs)
-        #m_features = t.Tensor(feature).cuda()
-        #print(m_features.shape)
-        #features = feature
+        features = self.faster_rcnn.extractor(imgs)
 
         rpn_locs, rpn_scores, rois, roi_indices, anchor, _, _ = \
-            self.faster_rcnn.rpn(feature, img_size, scale)
+            self.faster_rcnn.rpn(features, img_size, scale)
 
         # Since batch size is one, convert variables to singular form
         bbox = bboxes[0]
@@ -119,10 +115,11 @@ class FasterRCNNTrainer(nn.Module):
             at.tonumpy(label),
             self.loc_normalize_mean,
             self.loc_normalize_std)
+        
         # NOTE it's all zero because now it only support for batch=1 now
         sample_roi_index = t.zeros(len(sample_roi))
         roi_cls_loc, roi_score = self.faster_rcnn.head(
-            feature,
+            features,
             sample_roi,
             sample_roi_index)
 
@@ -168,10 +165,9 @@ class FasterRCNNTrainer(nn.Module):
 
         return LossTuple(*losses)
 
-    def train_step(self, imgs, bboxes, labels, scale, feature):
-        feature = feature.cuda()
+    def train_step(self, imgs, bboxes, labels, scale):
         self.optimizer.zero_grad()
-        losses = self.forward(imgs, bboxes, labels, scale, feature)
+        losses = self.forward(imgs, bboxes, labels, scale)
         losses.total_loss.backward()
         self.optimizer.step()
         self.update_meters(losses)
