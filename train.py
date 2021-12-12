@@ -46,9 +46,13 @@ matplotlib.use('agg')
 def eval(dataloader, faster_rcnn, test_num=10000):
     pred_bboxes, pred_labels, pred_scores = list(), list(), list()
     gt_bboxes, gt_labels, gt_difficults = list(), list(), list()
-    for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
+    for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_, gt_features_) in tqdm(enumerate(dataloader)):
+        
+        gt_features_ = gt_features_.cuda()
+        #print(gt_features_.shape)
+        
         sizes = [sizes[0][0].item(), sizes[1][0].item()]
-        pred_bboxes_, pred_labels_, pred_scores_, _, _ = faster_rcnn.predict(imgs, [sizes])
+        pred_bboxes_, pred_labels_, pred_scores_, _, _ = faster_rcnn.predict(imgs, gt_features_, sizes=[sizes])
         gt_bboxes += list(gt_bboxes_.numpy())
         gt_labels += list(gt_labels_.numpy())
         gt_difficults += list(gt_difficults_.numpy())
@@ -74,7 +78,8 @@ def train(**kwargs):
                                   batch_size=1, \
                                   shuffle=True, \
                                   # pin_memory=True,
-                                  num_workers=opt.num_workers)
+                                  num_workers=opt.num_workers
+                                  )
     testset = TestDataset(opt)
     test_dataloader = data_.DataLoader(testset,
                                        batch_size=1,
@@ -102,18 +107,18 @@ def train(**kwargs):
     for epoch in range(opt.epoch):
         trainer.reset_meters()
 
-        for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
+        for ii, (img, bbox_, label_, scale, feature) in tqdm(enumerate(dataloader)):
             
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
-            losses = trainer.train_step(img, bbox, label, scale)
+            losses = trainer.train_step(img, bbox, label, scale, feature)
             #writer.add_scalar("Loss/train", losses.total_loss, ii)
 
             lst_iter_train.append(iters)
             lst_loss_train.append(losses.total_loss)
             
 
-            if (ii + 1) % opt.plot_every == 0:
+            '''if (ii + 1) % opt.plot_every == 0:
                 if os.path.exists(opt.debug_file):
                     ipdb.set_trace()
 
@@ -140,7 +145,8 @@ def train(**kwargs):
                 # roi confusion matrix
                 trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
         
-                iters += 1
+                '''
+            iters += 1
 
         eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num)
         trainer.vis.plot('test_map', eval_result['map'])
@@ -154,6 +160,8 @@ def train(**kwargs):
 
         #print(log_info)
         trainer.vis.log(log_info)
+
+        print(eval_result['map'])
 
         if eval_result['map'] > best_map:
             best_map = eval_result['map']

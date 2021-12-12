@@ -18,85 +18,20 @@ class NewExtractor(nn.Module):
         # n_class includes the background
         super(NewExtractor, self).__init__()
 
-        extractor = timm.create_model('vgg16',pretrained=True)
-        #print(extractor)
-
-        #return
+        self.extractor = timm.create_model('efficientnetv2_rw_s',pretrained=True)
+        
         '''features = list([extractor.conv_stem,
           extractor.bn1,
           extractor.act1,
-          extractor.blocks])'''
-        #features = list(extractor)[:-2]
-
-        #Denset model
-        '''features = list([
-          extractor.conv1,
-          extractor.bn1,
-          extractor.act1,
-          extractor.maxpool,
-          extractor.layer1,
-          extractor.layer2,
-          extractor.layer3,
-          extractor.layer4
-        ])'''
-
+          extractor.blocks])
+      
+        self.seg = nn.Sequential(*features)'''
         
-        '''print("BEFORE BEFORE ", features[-1])
-        #features[-1] = list(features[-1].modules())
-        features[-1][2] = 
-        features[-1] =  features[-1][:-3]
-        print("BEFORE ", features[-1])
-        features[-1] = nn.Sequential(*features[-1])
-        print(features[-1])'''
-        '''features[-1] = list([
-          extractor.layer4[0],
-          extractor.layer4[1],
-          extractor.layer4[2].conv1,
-          extractor.layer4[2].bn1,
-          extractor.layer4[2].act1,
-          extractor.layer4[2].conv2,
-          extractor.layer4[2].bn2,
-          extractor.layer4[2].act2
-        ])
-        features[-1] = nn.Sequential(*features[-1])'''
-
-        #print(features[-1])
-        #print(features)
-
-        features = extractor.features[:-1]
-
-        self.seg = nn.Sequential(*features)
-        
-        #checkpoint = t.load("/content/model_best.pth.tar")
-        #self.extractor.load_state_dict(checkpoint['state_dict'])
-
-        #self.reduceCNN = nn.Conv2d(328, 512, (1, 1))
-
-        '''for p in self.extractor.conv_stem.parameters():
-            p.requires_grad = False
-        
-        for p in self.extractor.bn1.parameters():
-            p.requires_grad = False
-        
-        for p in self.extractor.act1.parameters():
-            p.requires_grad = False
-
-        for p in self.extractor.blocks.parameters():
-            p.requires_grad = False
-
-        for p in self.extractor.parameters():
-            p.requires_grad = False'''
-        
-
     def forward(self, x):
         
-        #x = self.extractor.forward_features(x)
-        #x = self.extractor.conv_stem(x)
-        #x = self.extractor.bn1(x)
-        # = self.extractor.act1(x)
-        #x = self.extractor.blocks(x)
-        x = self.seg(x)
-        #x = self.reduceCNN(x)
+        #x = self.seg(x)
+        x = self.extractor.forward_features(x)
+        
         return x
 
 def decom_vgg16():
@@ -153,7 +88,7 @@ class FasterRCNNVGG16(FasterRCNN):
         extractor, classifier = decom_vgg16()
         #print(classifier)
         classifier = nn.Sequential(
-          nn.Linear(25088, 4096),
+          nn.Linear(87808, 4096),
           nn.ReLU(inplace=True),
           nn.Linear(4096, 4096),
           nn.ReLU(inplace=True)
@@ -162,7 +97,7 @@ class FasterRCNNVGG16(FasterRCNN):
         extractor = NewExtractor()
 
         rpn = RegionProposalNetwork(
-            512, 512,
+            1792, 512,
             ratios=ratios,
             anchor_scales=anchor_scales,
             feat_stride=self.feat_stride,
@@ -241,7 +176,6 @@ class VGG16RoIHead(nn.Module):
 
         pool = self.roi(x, indices_and_rois)
         pool = pool.view(pool.size(0), -1)
-
 
         #print(pool.shape)
 

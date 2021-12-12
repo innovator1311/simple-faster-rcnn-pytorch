@@ -90,6 +90,17 @@ class FasterRCNN(nn.Module):
         # Total number of classes including the background.
         return self.head.n_class
 
+    def forward_features(self, x, scale=1.):
+
+        img_size = (224, 224)
+
+        rpn_locs, rpn_scores, rois, roi_indices, anchor, _, _ = \
+            self.rpn(x, img_size, scale)
+        roi_cls_locs, roi_scores = self.head(
+            x, rois, roi_indices)
+        
+        return roi_cls_locs, roi_scores, rois, roi_indices, rpn_locs, rpn_scores
+
     def forward(self, x, scale=1.):
         """Forward Faster R-CNN.
 
@@ -188,7 +199,7 @@ class FasterRCNN(nn.Module):
         return bbox, label, score
 
     @nograd
-    def predict(self, imgs,sizes=None,visualize=False):
+    def predict(self, imgs, features, sizes=None,visualize=False):
         """Detect objects from images.
 
         This method predicts objects for each image.
@@ -231,10 +242,15 @@ class FasterRCNN(nn.Module):
         bboxes = list()
         labels = list()
         scores = list()
-        for img, size in zip(prepared_imgs, sizes):
+        #features = [features]
+        for img, size, feature in zip(prepared_imgs, sizes, features):
             img = at.totensor(img[None]).float()
+            feature = at.totensor(feature[None]).float()
             scale = img.shape[3] / size[1]
-            roi_cls_loc, roi_scores, rois, _, rpn_locs, rpn_scores = self(img, scale=scale)
+            
+            #print(feature)
+
+            roi_cls_loc, roi_scores, rois, _, rpn_locs, rpn_scores = self.forward_features(feature, scale=scale)
             # We are assuming that batch size is 1.
             roi_score = roi_scores.data
             roi_cls_loc = roi_cls_loc.data

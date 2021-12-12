@@ -23,6 +23,7 @@ def read_image(path, dtype=np.float32, color=True):
     """
 
     f = Image.open(path)
+    #f = f.resize((256, 256))
     try:
         if color:
             img = f.convert('RGB')

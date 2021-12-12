@@ -98,7 +98,7 @@ class RegionProposalNetwork(nn.Module):
             * **anchor**: Coordinates of enumerated shifted anchors. \
                 Its shape is :math:`(H W A, 4)`.
 
-        """
+        """      
         n, _, hh, ww = x.shape
         anchor = _enumerate_shifted_anchor(
             np.array(self.anchor_base),
