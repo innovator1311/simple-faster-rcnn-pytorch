@@ -107,7 +107,7 @@ class FasterRCNNVGG16Real(FasterRCNN):
             classifier=classifier
         )
 
-        super(FasterRCNNVGG16, self).__init__(
+        super(FasterRCNNVGG16Real, self).__init__(
             extractor,
             rpn,
             head,
