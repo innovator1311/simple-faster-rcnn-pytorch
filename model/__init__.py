@@ -1,2 +1,2 @@
-from model.faster_rcnn_vgg16 import FasterRCNNVGG16
+from model.faster_rcnn_vgg16 import FasterRCNNVGG16, FasterRCNNEffB0
 from model.faster_rcnn_vgg16_real import FasterRCNNVGG16Real

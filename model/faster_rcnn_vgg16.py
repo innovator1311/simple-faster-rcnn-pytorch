@@ -11,6 +11,22 @@ from utils.config import opt
 
 import timm
 
+class NewExtractorB0(nn.Module):
+    
+
+    def __init__(self):
+        # n_class includes the background
+        super(NewExtractorB0, self).__init__()
+
+        self.extractor = timm.create_model('efficientnet_b0',pretrained=True)
+                
+    def forward(self, x):
+        
+        #x = self.seg(x)
+        x = self.extractor.forward_features(x)
+        
+        return x
+
 class NewExtractor(nn.Module):
     
 
@@ -26,6 +42,9 @@ class NewExtractor(nn.Module):
           extractor.blocks])
       
         self.seg = nn.Sequential(*features)'''
+
+        for param in self.extractor.parameters():
+            param.requires_grad = True
         
     def forward(self, x):
         
@@ -82,8 +101,7 @@ class FasterRCNNVGG16(FasterRCNN):
     def __init__(self,
                  n_fg_class=20,
                  ratios=[0.5, 1, 2],
-                 anchor_scales=[8, 16, 32]
-                 ):
+                 anchor_scales=[8, 16, 32]):
                  
         extractor, classifier = decom_vgg16()
         #print(classifier)
@@ -111,6 +129,51 @@ class FasterRCNNVGG16(FasterRCNN):
         )
 
         super(FasterRCNNVGG16, self).__init__(
+            extractor,
+            rpn,
+            head,
+        )
+
+class FasterRCNNEffB0(FasterRCNN):
+    """Faster R-CNN based on VGG-16.
+    For descriptions on the interface of this model, please refer to
+    :class:`model.faster_rcnn.FasterRCNN`.
+
+    Args:
+        n_fg_class (int): The number of classes excluding the background.
+        ratios (list of floats): This is ratios of width to height of
+            the anchors.
+        anchor_scales (list of numbers): This is areas of anchors.
+            Those areas will be the product of the square of an element in
+            :obj:`anchor_scales` and the original area of the reference
+            window.
+
+    """
+
+    feat_stride = 16  # downsample 16x for output of conv5 in vgg16
+
+    def __init__(self,
+                 n_fg_class=20,
+                 ratios=[0.5, 1, 2],
+                 anchor_scales=[8, 16, 32]):
+                 
+        extractor = NewExtractorB0()
+
+        rpn = RegionProposalNetwork(
+            1280, 512,
+            ratios=ratios,
+            anchor_scales=anchor_scales,
+            feat_stride=self.feat_stride,
+        )
+
+        head = VGG16RoIHead(
+            n_class=n_fg_class + 1,
+            roi_size=7,
+            spatial_scale=(1. / self.feat_stride),
+            classifier=classifier
+        )
+
+        super(FasterRCNNEffB0, self).__init__(
             extractor,
             rpn,
             head,
