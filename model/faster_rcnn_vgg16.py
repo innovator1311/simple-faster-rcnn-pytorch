@@ -159,6 +159,13 @@ class FasterRCNNEffB0(FasterRCNN):
                  
         extractor = NewExtractorB0()
 
+        classifier = nn.Sequential(
+          nn.Linear(87808, 4096),
+          nn.ReLU(inplace=True),
+          nn.Linear(4096, 4096),
+          nn.ReLU(inplace=True)
+        )
+
         rpn = RegionProposalNetwork(
             1280, 512,
             ratios=ratios,
