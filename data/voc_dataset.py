@@ -142,10 +142,10 @@ VOC_BBOX_LABEL_NAMES = (
 
 #####################################################
 
-volumetric_data_dir = '../volumetric_data'
-metadata_csv_path = '../metadata.csv'
-metadata = np.genfromtxt(metadata_csv_path, delimiter=',', names=True, 
-    dtype='i4,i4,i4,i4,i4,i4,i4,i4,i4,i4,U20') 
+#volumetric_data_dir = '../volumetric_data'
+#metadata_csv_path = '../metadata.csv'
+#metadata = np.genfromtxt(metadata_csv_path, delimiter=',', names=True, 
+#    dtype='i4,i4,i4,i4,i4,i4,i4,i4,i4,i4,U20') 
 
 class MRIDataset:
     """Bounding box dataset for PASCAL `VOC`_.
