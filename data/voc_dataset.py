@@ -281,6 +281,7 @@ class MRIDataset:
 
         mi = np.min(volumetric_data)
         ma = np.max(volumetric_data)
+
         volumetric_data = 255 * (volumetric_data - mi) / (ma - mi)
 
         img = np.stack((volumetric_data, volumetric_data, volumetric_data))
